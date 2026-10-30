@@ -1,3 +1,19 @@
+# CleanYourTV Sola
+
+Fork dari [CleanYourTV](https://github.com/Gathin23/cleanyourtv) karya Gathin, dengan widget di layar Home:
+
+- **Jadwal sholat** dengan hitung mundur, lokasi dipilih dari kode pos
+- **Pengingat adzan**: banner di atas aplikasi apa pun, bisa dengan suara adzan pilihanmu
+- **Kalender** dengan tanggal Hijriah
+- **Jadwal bola** tim favorit, lengkap dengan skor (FotMob atau Gemini)
+- Kartu bergaya kaca buram, dan tiap kartu bisa disembunyikan dari Launcher settings
+
+**[Cara pasang (bahasa Indonesia)](PASANG.md)** · **[Unduh APK](../../releases/latest)**
+
+Semua di bawah ini adalah README asli CleanYourTV, untuk debloat TV dan dokumentasi launcher-nya.
+
+---
+
 <p align="center">
   <a href="https://cleanyour.tv/halloween"><img src="https://raw.githubusercontent.com/Gathin23/cleanyourtv/main/docs/banner-halloween.png" alt="CleanYourTV, Halloween edition. Your TV, minus the ads. Strip the bloatware from any Android TV or Google TV over Wi-Fi and replace the ad-filled home screen with a clean launcher that looks like an Apple TV. No root, no cable, nothing uninstalled, and a one-line restore. Now with a pumpkin." width="800"></a>
 </p>
