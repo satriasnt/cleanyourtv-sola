@@ -104,6 +104,504 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <!-- Home widgets (HomeWidgets): next prayer, month calendar, the football team's next match. Placed under
+         the header in code, above the top shelf and the dock; fades out while the grid is scrolled. -->
+    <LinearLayout
+        android:id="@+id/widgetRow"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_gravity="top|left"
+        android:layout_marginStart="66dp"
+        android:layout_marginEnd="66dp"
+        android:layout_marginTop="124dp"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/prayerCard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_bg"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="11dp"
+            android:paddingBottom="8dp">
+
+            <!-- The place, in green as in the phone widget it is modelled on. -->
+            <TextView
+                android:id="@+id/prayerPlace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#FF7FE0A0"
+                android:textSize="13sp"
+                android:fontFamily="@string/font_medium" />
+
+            <TextView
+                android:id="@+id/prayerDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#A6FFFFFF"
+                android:textSize="10sp"
+                android:fontFamily="@string/font_regular" />
+
+            <TextView
+                android:id="@+id/prayerCountdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#FFFFFFFF"
+                android:textSize="11.5sp"
+                android:fontFamily="@string/font_medium" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:id="@+id/prayerCol0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/prayerIcon0"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/prayerName0"
+                        style="@style/WidgetPrayerName" />
+
+                    <TextView
+                        android:id="@+id/prayerTime0"
+                        style="@style/WidgetPrayerTime" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/prayerCol1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/prayerIcon1"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/prayerName1"
+                        style="@style/WidgetPrayerName" />
+
+                    <TextView
+                        android:id="@+id/prayerTime1"
+                        style="@style/WidgetPrayerTime" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/prayerCol2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/prayerIcon2"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/prayerName2"
+                        style="@style/WidgetPrayerName" />
+
+                    <TextView
+                        android:id="@+id/prayerTime2"
+                        style="@style/WidgetPrayerTime" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/prayerCol3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/prayerIcon3"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/prayerName3"
+                        style="@style/WidgetPrayerName" />
+
+                    <TextView
+                        android:id="@+id/prayerTime3"
+                        style="@style/WidgetPrayerTime" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/prayerCol4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/prayerIcon4"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/prayerName4"
+                        style="@style/WidgetPrayerName" />
+
+                    <TextView
+                        android:id="@+id/prayerTime4"
+                        style="@style/WidgetPrayerTime" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/calCard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:background="@drawable/widget_card_bg"
+            android:orientation="horizontal"
+            android:paddingStart="18dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="13dp"
+            android:paddingBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="84dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/calWeekday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="#FFFF453A"
+                    android:textSize="11sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.14" />
+
+                <TextView
+                    android:id="@+id/calDay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="38sp"
+                    android:fontFamily="@string/font_light" />
+
+                <TextView
+                    android:id="@+id/calHijri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:maxLines="2"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="10sp"
+                    android:fontFamily="@string/font_regular" />
+            </LinearLayout>
+
+            <com.gathin.tvhome.MonthView
+                android:id="@+id/calMonth"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ballCard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:background="@drawable/widget_card_bg"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="11dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ballTeamLogo"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ballKicker"
+                    style="@style/WidgetKicker" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="5dp"
+                android:background="#1FFFFFFF" />
+
+            <LinearLayout
+                android:id="@+id/ballRow0"
+                android:layout_width="match_parent"
+                android:layout_height="19dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/ballDate0"
+                    android:layout_width="86dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="10sp"
+                    android:fontFamily="@string/font_medium" />
+
+                <ImageView
+                    android:id="@+id/ballLogo0"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:scaleType="fitCenter"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ballOpponent0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@string/font_regular" />
+
+                <TextView
+                    android:id="@+id/ballTag0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:singleLine="true"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="9.5sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.06" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ballRow1"
+                android:layout_width="match_parent"
+                android:layout_height="19dp"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/ballDate1"
+                    android:layout_width="86dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="10sp"
+                    android:fontFamily="@string/font_medium" />
+
+                <ImageView
+                    android:id="@+id/ballLogo1"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:scaleType="fitCenter"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ballOpponent1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@string/font_regular" />
+
+                <TextView
+                    android:id="@+id/ballTag1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:singleLine="true"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="9.5sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.06" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ballRow2"
+                android:layout_width="match_parent"
+                android:layout_height="19dp"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/ballDate2"
+                    android:layout_width="86dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="10sp"
+                    android:fontFamily="@string/font_medium" />
+
+                <ImageView
+                    android:id="@+id/ballLogo2"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:scaleType="fitCenter"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ballOpponent2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@string/font_regular" />
+
+                <TextView
+                    android:id="@+id/ballTag2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:singleLine="true"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="9.5sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.06" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ballRow3"
+                android:layout_width="match_parent"
+                android:layout_height="19dp"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/ballDate3"
+                    android:layout_width="86dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="10sp"
+                    android:fontFamily="@string/font_medium" />
+
+                <ImageView
+                    android:id="@+id/ballLogo3"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:scaleType="fitCenter"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ballOpponent3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@string/font_regular" />
+
+                <TextView
+                    android:id="@+id/ballTag3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:singleLine="true"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="9.5sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.06" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/ballEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:singleLine="true"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@string/font_regular"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
     <!-- Cinematic top shelf: darkens the edge behind the shelf and the lower half, so the text and the
          dock stay readable over the artwork. -->
     <View

@@ -523,4 +523,12 @@
     <!-- Tiles drawn from the app's icon and name instead of its banner (for banners that crop badly). -->
     <string-array name="icon_tiles" translatable="false">
     </string-array>
+
+    <!-- Home widgets (HomeWidgets): a row above the dock with the next prayer (location chosen by postal code
+         in Launcher settings, times computed on the TV), a month calendar with the Hijri date, and a football
+         team's fixtures from FotMob or Gemini (Launcher settings → Sumber jadwal). -->
+    <bool name="home_widgets">true</bool>
+    <!-- The default team: its FotMob id and name (Launcher settings → Tim favorit changes it). Persib Bandung is 165196. -->
+    <string name="football_team_id" translatable="false">165196</string>
+    <string name="football_team_name" translatable="false">Persib Bandung</string>
 </resources>
