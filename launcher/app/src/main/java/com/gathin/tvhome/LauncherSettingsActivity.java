@@ -27,6 +27,7 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView animationsChoice;
     private TextView advancedChoice;
     private TextView followThemeChoice;
+    private TextView themeChoice;
     private int columns;
     private int rowsBelowDock;
     private int dockOpacity;
@@ -118,6 +119,20 @@ public final class LauncherSettingsActivity extends Activity {
                         .show();
             }
         });
+        themeChoice = findViewById(R.id.themeChoice);
+        themeChoice.setOnClickListener(v -> startActivity(new Intent(this, ThemePickerActivity.class)));
+        setUpWidgets();
+        TextView prayerLocation = findViewById(R.id.prayerLocationChoice);
+        prayerLocation.setText("Lokasi jadwal sholat: " + PrayerLocationPicker.currentName(this));
+        prayerLocation.setOnClickListener(v -> PrayerLocationPicker.show(this, () ->
+                prayerLocation.setText("Lokasi jadwal sholat: " + PrayerLocationPicker.currentName(this))));
+        setUpPersonal();
+        setUpAdzan();
+        setUpFootball();
+        TextView team = findViewById(R.id.teamChoice);
+        team.setText("Tim favorit: " + TeamPicker.currentName(this));
+        team.setOnClickListener(v -> TeamPicker.show(this, () ->
+                team.setText("Tim favorit: " + TeamPicker.currentName(this))));
         followThemeChoice = findViewById(R.id.followThemeChoice);
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
@@ -198,6 +213,180 @@ public final class LauncherSettingsActivity extends Activity {
      * A choice was saved. Home rebuilds when it next resumes because the change count moved, whether these
      * settings are left with Back or with the remote's Home button (which cancels the activity result).
      */
+    /** Widget Home: the cards' look, and which cards show. */
+    private void setUpWidgets() {
+        TextView style = findViewById(R.id.widgetStyleChoice);
+        TextView shade = findViewById(R.id.widgetShadeChoice);
+        Runnable labels = () -> {
+            int i = WidgetStyle.index(choices.getString(WidgetStyle.PREF_STYLE, WidgetStyle.BLUR));
+            style.setText("Gaya kartu: " + WidgetStyle.STYLE_NAMES[i]);
+            shade.setText("Ketebalan latar: " + WidgetStyle.SHADE_NAMES[Math.max(0, Math.min(2,
+                    choices.getInt(WidgetStyle.PREF_SHADE, 1)))]);
+        };
+        labels.run();
+        style.setOnClickListener(v -> {
+            int i = WidgetStyle.index(choices.getString(WidgetStyle.PREF_STYLE, WidgetStyle.BLUR));
+            choices.edit().putString(WidgetStyle.PREF_STYLE, WidgetStyle.STYLES[(i + 1) % WidgetStyle.STYLES.length]).apply();
+            labels.run();
+        });
+        shade.setOnClickListener(v -> {
+            choices.edit().putInt(WidgetStyle.PREF_SHADE, (choices.getInt(WidgetStyle.PREF_SHADE, 1) + 1) % 3).apply();
+            labels.run();
+        });
+        cardSwitch(R.id.showPrayerChoice, HomeWidgets.PREF_SHOW_PRAYER, "Kartu jadwal sholat");
+        cardSwitch(R.id.calendarChoice, HomeWidgets.PREF_SHOW_CALENDAR, "Kartu kalender");
+        cardSwitch(R.id.showFootballChoice, HomeWidgets.PREF_SHOW_FOOTBALL, "Kartu jadwal bola");
+    }
+
+    private void cardSwitch(int id, String pref, String label) {
+        TextView row = findViewById(id);
+        Runnable text = () -> row.setText(label + ": " + (choices.getBoolean(pref, true) ? "Tampil" : "Sembunyi"));
+        text.run();
+        row.setOnClickListener(v -> {
+            choices.edit().putBoolean(pref, !choices.getBoolean(pref, true)).apply();
+            changed();   // Home rebuilds: the dock moves when the row comes or goes
+            text.run();
+        });
+    }
+
+    private TextView tileMenuChoice;
+    private TextView appLibraryChoice;
+
+    /** Menu tile and App library: switches kept in the TV's settings, so no theme or config push clears them. */
+    private void setUpPersonal() {
+        tileMenuChoice = findViewById(R.id.tileMenuChoice);
+        appLibraryChoice = findViewById(R.id.appLibraryChoice);
+        tileMenuChoice.setOnClickListener(v -> {
+            choices.edit().putBoolean(Config.PREF_TILE_MENU, !Config.load(this).tileMenu).apply();
+            changed();
+            refreshPersonal();
+        });
+        appLibraryChoice.setOnClickListener(v -> {
+            choices.edit().putBoolean(Config.PREF_APP_LIBRARY, !Config.load(this).appLibrary).apply();
+            changed();
+            refreshPersonal();
+        });
+        refreshPersonal();
+    }
+
+    private void refreshPersonal() {
+        Config now = Config.load(this);
+        tileMenuChoice.setText("Menu tile (tahan OK: pindah, sembunyikan): " + (now.tileMenu ? "Aktif" : "Mati"));
+        appLibraryChoice.setText("App library (daftar semua aplikasi): " + (now.appLibrary ? "Aktif" : "Mati"));
+    }
+
+    private TextView sourceChoice;
+    private TextView geminiKeyChoice;
+    private TextView footballHint;
+
+    private void setUpFootball() {
+        sourceChoice = findViewById(R.id.sourceChoice);
+        geminiKeyChoice = findViewById(R.id.geminiKeyChoice);
+        footballHint = findViewById(R.id.footballHint);
+        Runnable refresh = this::refreshFootball;
+        sourceChoice.setOnClickListener(v -> {
+            if (FootballSource.GEMINI.equals(FootballSource.source(this))) {
+                choices.edit().putString(FootballSource.PREF_SOURCE, FootballSource.FOTMOB).apply();
+                HomeWidgets.forgetMatches(this);
+                refreshFootball();
+            } else if (choices.getString(FootballSource.PREF_GEMINI_KEY, "").isEmpty()) {
+                GeminiSetup.intro(this, refresh);
+            } else {
+                choices.edit().putString(FootballSource.PREF_SOURCE, FootballSource.GEMINI).apply();
+                HomeWidgets.forgetMatches(this);
+                refreshFootball();
+            }
+        });
+        geminiKeyChoice.setOnClickListener(v -> GeminiSetup.manage(this, refresh));
+        findViewById(R.id.footballRefresh).setOnClickListener(v -> {
+            HomeWidgets.forgetMatches(this);
+            Toast.makeText(this, "Jadwal diambil ulang saat kembali ke Home", Toast.LENGTH_SHORT).show();
+            refreshFootball();
+        });
+        refreshFootball();
+    }
+
+    private void refreshFootball() {
+        boolean gemini = FootballSource.GEMINI.equals(FootballSource.source(this));
+        sourceChoice.setText("Sumber jadwal: " + (gemini ? "Gemini" : "FotMob"));
+        String key = choices.getString(FootballSource.PREF_GEMINI_KEY, "");
+        geminiKeyChoice.setText("Key Gemini: " + (key.isEmpty() ? "belum ada" : "tersimpan (…"
+                + key.substring(Math.max(0, key.length() - 4)) + ")"));
+        long at = HomeWidgets.fetchedAt(this);
+        String error = choices.getString(FootballSource.PREF_ERROR, "");
+        StringBuilder hint = new StringBuilder(at == 0 ? "Jadwal belum diambil."
+                : "Jadwal terakhir diambil " + java.time.Instant.ofEpochMilli(at).atZone(java.time.ZoneId.systemDefault())
+                .format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMM, HH.mm", new java.util.Locale("id", "ID"))) + ".");
+        if (!error.isEmpty()) hint.append("\nPercobaan terakhir gagal: ").append(error);
+        if (gemini) hint.append("\nGemini menjawab berdasarkan pencarian Google; sesekali bisa keliru.");
+        footballHint.setText(hint);
+    }
+
+    private TextView adzanChoice;
+    private TextView adzanHint;
+    private final TextView[] adzanPrayers = new TextView[5];
+
+    private void setUpAdzan() {
+        adzanChoice = findViewById(R.id.adzanChoice);
+        adzanHint = findViewById(R.id.adzanHint);
+        adzanChoice.setOnClickListener(v -> {
+            choices.edit().putInt(Adzan.PREF_MODE, (Adzan.mode(this) + 1) % Adzan.MODES.length).apply();
+            Adzan.schedule(this);
+            refreshAdzan();
+        });
+        int[] ids = {R.id.adzan0, R.id.adzan1, R.id.adzan2, R.id.adzan3, R.id.adzan4};
+        for (int i = 0; i < ids.length; i++) {
+            final int index = i;
+            adzanPrayers[i] = findViewById(ids[i]);
+            adzanPrayers[i].setOnClickListener(v -> {
+                choices.edit().putBoolean(Adzan.PREF_PRAYER + index, !Adzan.enabled(this, index)).apply();
+                Adzan.schedule(this);
+                refreshAdzan();
+            });
+        }
+        findViewById(R.id.adzanTest).setOnClickListener(v -> {
+            int mode = Adzan.mode(this);
+            Adzan.announce(this, 3, mode == Adzan.OFF ? Adzan.BANNER : mode);
+            if (!Adzan.canShowBanner(this)) {
+                Toast.makeText(this, "Banner belum bisa tampil: izin tampil di atas aplikasi belum diberikan",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+        refreshAdzan();
+    }
+
+    private void refreshAdzan() {
+        int mode = Adzan.mode(this);
+        adzanChoice.setText("Pengingat adzan: " + Adzan.MODES[mode]);
+        for (int i = 0; i < adzanPrayers.length; i++) {
+            boolean on = Adzan.enabled(this, i);
+            adzanPrayers[i].setText(PrayerTimes.NAMES[PrayerTimes.PRAYERS[i]] + (on ? " ✓" : ""));
+            adzanPrayers[i].setSelected(on);
+            adzanPrayers[i].setAlpha(mode == Adzan.OFF ? 0.5f : 1f);
+        }
+        StringBuilder hint = new StringBuilder("Pilih waktu sholat yang diingatkan. Tekan Home untuk menghentikan adzan.");
+        if (mode != Adzan.OFF && !Adzan.canShowBanner(this)) {
+            hint.append("\nIzin \"tampil di atas aplikasi lain\" belum diberikan, jadi banner belum bisa muncul.");
+        }
+        if (mode == Adzan.SOUND) {
+            hint.append(Adzan.file(this, false) != null ? "\nFile adzan.mp3 ditemukan."
+                    : "\nFile adzan.mp3 belum ada di TV; sementara diganti nada singkat.");
+            if (Adzan.file(this, true) != null && Adzan.file(this, true).getName().equals(Adzan.FILE_SUBUH)) {
+                hint.append(" Subuh memakai adzan_subuh.mp3.");
+            }
+        }
+        adzanHint.setText(hint);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adzanChoice != null) refreshAdzan();
+        if (sourceChoice != null) refreshFootball();
+        String applied = choices.getString(ThemePickerActivity.PREF_APPLIED, "");
+        themeChoice.setText("Tema: " + (applied.isEmpty() ? "Bawaan" : applied));
+    }
+
     private void changed() {
         setResult(RESULT_OK);
         choices.edit().putLong(Config.SETTINGS_REVISION_KEY,

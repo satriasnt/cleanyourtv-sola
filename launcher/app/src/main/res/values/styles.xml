@@ -47,10 +47,79 @@
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>
+    <!-- A group title in Launcher settings (home widgets fork). -->
+    <style name="SettingsGroupHeader">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">40dp</item>
+        <item name="android:textColor">#FF7FE0A0</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
     <style name="SettingsColumnChoice" parent="SettingsRow">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
         <item name="android:layout_marginEnd">10dp</item>
         <item name="android:gravity">center</item>
+    </style>
+    <!-- Home widgets (HomeWidgets). -->
+    <style name="WidgetPrayerName">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">#B3FFFFFF</item>
+        <item name="android:textSize">9.5sp</item>
+        <item name="android:fontFamily">@string/font_regular</item>
+    </style>
+    <style name="WidgetPrayerTime">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">12.5sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="WidgetTeamName">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">#E6FFFFFF</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:fontFamily">@string/font_medium</item>
+    </style>
+    <style name="WidgetKicker">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">#B3FFFFFF</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:fontFamily">@string/font_medium</item>
+        <item name="android:letterSpacing">0.16</item>
+    </style>
+    <style name="WidgetHeadline">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">@string/font_light</item>
+    </style>
+    <style name="WidgetLine">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">#CCFFFFFF</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@string/font_regular</item>
     </style>
 </resources>

@@ -111,6 +111,115 @@
             android:textColor="#FFACB8C1"
             android:textSize="14sp" />
 
+
+        <TextView
+            style="@style/SettingsGroupHeader"
+            android:text="Tampilan" />
+        <TextView
+            android:id="@+id/tileMenuChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="12dp" />
+        <TextView
+            android:id="@+id/appLibraryChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+        <TextView
+            android:id="@+id/themeChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            style="@style/SettingsGroupHeader"
+            android:text="Widget Home" />
+
+        <TextView
+            android:id="@+id/widgetStyleChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/widgetShadeChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/showPrayerChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+        <TextView
+            android:id="@+id/calendarChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/showFootballChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            style="@style/SettingsGroupHeader"
+            android:text="Jadwal sholat &amp; adzan" />
+        <TextView
+            android:id="@+id/prayerLocationChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="12dp" />
+        <TextView
+            android:id="@+id/adzanChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/adzan0" style="@style/SettingsColumnChoice" />
+            <TextView android:id="@+id/adzan1" style="@style/SettingsColumnChoice" />
+            <TextView android:id="@+id/adzan2" style="@style/SettingsColumnChoice" />
+            <TextView android:id="@+id/adzan3" style="@style/SettingsColumnChoice" />
+            <TextView android:id="@+id/adzan4" style="@style/SettingsColumnChoice" android:layout_marginEnd="0dp" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/adzanTest"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp"
+            android:text="Tes pengingat sekarang" />
+        <TextView
+            android:id="@+id/adzanHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
+            style="@style/SettingsGroupHeader"
+            android:text="Jadwal bola" />
+        <TextView
+            android:id="@+id/teamChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="12dp" />
+        <TextView
+            android:id="@+id/sourceChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+        <TextView
+            android:id="@+id/geminiKeyChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+        <TextView
+            android:id="@+id/footballRefresh"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp"
+            android:text="Perbarui jadwal sekarang" />
+        <TextView
+            android:id="@+id/footballHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
         <TextView
             android:id="@+id/followThemeChoice"
             style="@style/SettingsRow"

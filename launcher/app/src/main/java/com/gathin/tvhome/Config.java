@@ -37,6 +37,9 @@ final class Config {
     static final String FILE_NAME = "config.json";
     static final String WALLPAPER_NAME = "wallpaper.jpg";
     static final String SETTINGS_NAME = "launcher_settings";
+    /** Launcher settings switches that override tile_menu and app_library from config.xml or a theme. */
+    static final String PREF_TILE_MENU = "personal_tile_menu";
+    static final String PREF_APP_LIBRARY = "personal_app_library";
     static final String ROWS_BELOW_DOCK_KEY = "rows_below_dock";
     static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
     static final String DOCK_OPACITY_KEY = "dock_opacity";
@@ -458,6 +461,10 @@ final class Config {
             wallpaper = chosen.isEmpty() ? null : chosen.get(0);
             wallpaperEnabled = !chosen.isEmpty();
         }
+        // Choices made in Launcher settings outrank config.xml and any theme, so a theme change keeps them.
+        SharedPreferences personal = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
+        if (personal.contains(PREF_TILE_MENU)) tileMenu = personal.getBoolean(PREF_TILE_MENU, tileMenu);
+        if (personal.contains(PREF_APP_LIBRARY)) library = personal.getBoolean(PREF_APP_LIBRARY, library);
         // A festive skin comes only from a theme; config.xml has no festival.
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));

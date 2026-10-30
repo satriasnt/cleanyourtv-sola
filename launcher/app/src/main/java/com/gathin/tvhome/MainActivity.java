@@ -176,6 +176,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView stats;
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
+    /** The widget row above the dock (HomeWidgets); null when home_widgets is off. */
+    private HomeWidgets widgets;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -332,6 +334,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         public void run() {
             updateGreeting();
             updateRace();
+            if (widgets != null) widgets.update();
             // The pill follows the network callbacks and each return to Home; only the diya's flame follows the
             // signal level, so only it needs this minute's binder calls (about 7 ms on the UI thread).
             if (festive) updateWifiLabel();
@@ -431,6 +434,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         raceKicker = findViewById(R.id.raceKicker);
         raceHeadline = findViewById(R.id.raceHeadline);
         raceSessions = findViewById(R.id.raceSessions);
+        widgets = HomeWidgets.create(this);
+        if (widgets != null) {
+            root.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) ->
+                    widgets.placeUnder((View) clockBlock.getParent(), root));
+        }
         showStats = cfg.showStats;
         shamsi = cfg.shamsiDate;
         greetingName = cfg.greetingName;
@@ -533,6 +541,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (MainActivity.this.dockRow && cfg.dockTitle && rowsBelowDock > 0) want = Math.max(want, (int) (AppAdapter.TITLE_ROOM_DP * density));
             // No dock to push down: the grid starts at the top, with room for the first row's zoom and glass.
             if (!MainActivity.this.dockRow) want = (int) (AppAdapter.TOP_ROOM_DP * density);
+            // Home widgets: keep the dock, and the top shelf above it, below the widget row.
+            if (widgets != null && MainActivity.this.dockRow) {
+                View header = (View) clockBlock.getParent();
+                int[] rootAt = new int[2], headerAt = new int[2], gridAt = new int[2];
+                root.getLocationInWindow(rootAt);
+                header.getLocationInWindow(headerAt);
+                grid.getLocationInWindow(gridAt);
+                int widgetsBottom = headerAt[1] - rootAt[1] + header.getHeight() + (int) (14 * density) + widgets.heightPx();
+                int shelf = cfg.dockTitle ? Math.max(hero.getMeasuredHeight(), (int) (56 * density)) : 0;
+                want = Math.max(want, widgetsBottom - (gridAt[1] - rootAt[1]) + shelf + (int) (50 * density));
+            }
             if (grid.getPaddingTop() != want) {
                 grid.setPadding(grid.getPaddingLeft(), want, grid.getPaddingRight(), grid.getPaddingBottom());
             }
@@ -545,6 +564,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                if (widgets != null) widgets.onGridScrolled(rv.computeVerticalScrollOffset());
                 if (!glassShown) return;
                 glassTargetY -= dy;
                 glassScrollShift -= dy;
@@ -792,6 +812,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        // Home pressed while the adzan plays: that is how it is stopped.
+        if (Adzan.playing()) Adzan.stop();
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
@@ -823,6 +845,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLiveTvAfterBoot()) return;
         updateGreeting();
         updateRace();
+        if (widgets != null) widgets.update();
         // The network and Inputs pills keep their state while Home is in the background, and callbacks update them
         // when the network or the inputs change, so this refresh only catches anything missed. Its binder calls
         // (about 7 ms on a TCL C755, most of it WifiManager.getConnectionInfo) would hold up the first frame back
@@ -1065,6 +1088,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     protected void onDestroy() {
+        if (widgets != null) widgets.shutdown();
         super.onDestroy();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();

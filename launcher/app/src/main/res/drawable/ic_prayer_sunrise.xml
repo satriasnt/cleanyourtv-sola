@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subuh: the sun just under the horizon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="1.8" android:strokeLineCap="round"
+        android:pathData="M6.5,17 A5.5,5.5 0 0,1 17.5,17 M2.5,20 L21.5,20 M12,6 L12,8.5 M4.6,10.6 L6.3,12.1 M19.4,10.6 L17.7,12.1" />
+</vector>
