@@ -167,7 +167,7 @@ final class HomeWidgets {
             updateFootball(now.toInstant());
             maybeFetch(now.toInstant());   // a hidden card fetches nothing
         }
-        spaceCards();
+        arrangeCards();
         Adzan.schedule(activity);          // reminders run whether or not the prayer card shows
         // The wallpaper may have moved on (rotation, theme): refresh the frosted glass after this layout.
         row.post(this::styleCards);
@@ -179,19 +179,74 @@ final class HomeWidgets {
     static final String PREF_SHOW_PRAYER = "widget_prayer";
     static final String PREF_SHOW_FOOTBALL = "widget_football";
 
-    /** The first visible card starts at the row's edge; the others keep a gap before them. */
-    private void spaceCards() {
+    static final String PREF_STRETCH = "widget_stretch";
+    static final String PREF_ALIGN = "widget_align";
+    static final String PREF_ORDER = "widget_order";
+
+    /** Kiri, tengah, kanan: where the cards sit when they are not stretched. */
+    static final String[] ALIGN_NAMES = {"Kiri", "Tengah", "Kanan"};
+    /** Every order of the three cards: p = jadwal sholat, k = kalender, b = jadwal bola. */
+    static final String[] ORDERS = {"pkb", "pbk", "kpb", "kbp", "bpk", "bkp"};
+    static final String DEFAULT_ORDER = "pkb";
+
+    static String orderOf(SharedPreferences prefs) {
+        String o = prefs.getString(PREF_ORDER, DEFAULT_ORDER);
+        for (String known : ORDERS) if (known.equals(o)) return o;
+        return DEFAULT_ORDER;
+    }
+
+    static String orderLabel(String order) {
+        StringBuilder b = new StringBuilder();
+        for (char c : order.toCharArray()) {
+            if (b.length() > 0) b.append(" \u00B7 ");
+            b.append(c == 'p' ? "Sholat" : c == 'k' ? "Kalender" : "Bola");
+        }
+        return b.toString();
+    }
+
+    /**
+     * Puts the cards in the chosen order, then either stretches them over the row (the first visible one
+     * at the row's edge, a gap before the others) or keeps each a third of the row wide, as if all three
+     * showed, and slides the group left, to the middle or right.
+     */
+    private void arrangeCards() {
+        android.widget.LinearLayout r = (android.widget.LinearLayout) row;
+        String order = orderOf(prefs);
+        View[] cards = new View[3];
+        for (int i = 0; i < 3; i++) {
+            char c = order.charAt(i);
+            cards[i] = c == 'p' ? prayerCard : c == 'k' ? calCard : ballCard;
+        }
+        for (int i = 0; i < 3; i++) {
+            if (r.getChildAt(i) != cards[i]) {
+                r.removeView(cards[i]);
+                r.addView(cards[i], i);
+            }
+        }
+        boolean stretch = prefs.getBoolean(PREF_STRETCH, true);
+        int align = Math.max(0, Math.min(2, prefs.getInt(PREF_ALIGN, 0)));
+        int gap = (int) (14 * density);
+        int rowWidth = r.getWidth() > 0 ? r.getWidth()
+                : activity.getResources().getDisplayMetrics().widthPixels - (int) (132 * density);
+        int third = Math.max(0, (rowWidth - 2 * gap) / 3);
         boolean first = true;
-        for (View card : new View[]{prayerCard, calCard, ballCard}) {
+        for (View card : cards) {
             if (card.getVisibility() != View.VISIBLE) continue;
             android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) card.getLayoutParams();
-            int start = first ? 0 : (int) (14 * density);
-            if (lp.getMarginStart() != start) {
+            int start = first ? 0 : gap;
+            int width = stretch ? 0 : third;
+            float weight = stretch ? 1f : 0f;
+            if (lp.getMarginStart() != start || lp.width != width || lp.weight != weight) {
                 lp.setMarginStart(start);
+                lp.width = width;
+                lp.weight = weight;
                 card.setLayoutParams(lp);
             }
             first = false;
         }
+        int gravity = stretch || align == 0 ? android.view.Gravity.START
+                : align == 1 ? android.view.Gravity.CENTER_HORIZONTAL : android.view.Gravity.END;
+        if (r.getGravity() != (gravity | android.view.Gravity.TOP)) r.setGravity(gravity | android.view.Gravity.TOP);
     }
 
     private String lastStyleKey = "";

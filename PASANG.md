@@ -85,7 +85,7 @@ Supaya ringan, kecilkan dulu file-nya (misalnya jadi mono 48 kbps, sekitar 1,5 M
 
 Buka **Launcher settings** dari Home:
 
-- **Widget Home**: gaya kartu, ketebalan latar, tampil/sembunyi tiap kartu.
+- **Widget Home**: gaya kartu, ketebalan latar, tampil/sembunyi tiap kartu, urutan kartu, dan **Lebarkan kartu**. Kalau Lebarkan kartu dimatikan, tiap kartu tetap berukuran normal dan bisa ditaruh di kiri, tengah, atau kanan (rapi kalau cuma satu atau dua kartu yang tampil).
 - **Jadwal sholat & adzan**: lokasi, mode pengingat (banner / nada / suara adzan), waktu sholat mana yang diingatkan, dan tombol **Tes pengingat sekarang**.
 - **Jadwal bola**: tim favorit dan sumber jadwal. FotMob langsung jalan; Gemini butuh API key gratis dari aistudio.google.com/apikey (petunjuknya muncul di layar). Mengetik key paling enak lewat aplikasi Google TV di HP.
 

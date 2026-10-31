@@ -319,6 +319,35 @@ public final class LauncherSettingsActivity extends Activity {
         cardSwitch(R.id.showPrayerChoice, HomeWidgets.PREF_SHOW_PRAYER, "Kartu jadwal sholat");
         cardSwitch(R.id.calendarChoice, HomeWidgets.PREF_SHOW_CALENDAR, "Kartu kalender");
         cardSwitch(R.id.showFootballChoice, HomeWidgets.PREF_SHOW_FOOTBALL, "Kartu jadwal bola");
+
+        TextView stretch = findViewById(R.id.widgetStretchChoice);
+        TextView align = findViewById(R.id.widgetAlignChoice);
+        TextView order = findViewById(R.id.widgetOrderChoice);
+        Runnable layoutLabels = () -> {
+            boolean on = choices.getBoolean(HomeWidgets.PREF_STRETCH, true);
+            stretch.setText("Lebarkan kartu: " + (on ? "On" : "Off"));
+            int a = Math.max(0, Math.min(2, choices.getInt(HomeWidgets.PREF_ALIGN, 0)));
+            align.setText(on ? "Posisi kartu: Penuh (matikan Lebarkan kartu untuk memilih)"
+                    : "Posisi kartu: " + HomeWidgets.ALIGN_NAMES[a]);
+            align.setAlpha(on ? 0.5f : 1f);
+            order.setText("Urutan kartu: " + HomeWidgets.orderLabel(HomeWidgets.orderOf(choices)));
+        };
+        layoutLabels.run();
+        stretch.setOnClickListener(v -> {
+            choices.edit().putBoolean(HomeWidgets.PREF_STRETCH, !choices.getBoolean(HomeWidgets.PREF_STRETCH, true)).apply();
+            layoutLabels.run();
+        });
+        align.setOnClickListener(v -> {
+            if (choices.getBoolean(HomeWidgets.PREF_STRETCH, true)) return;
+            choices.edit().putInt(HomeWidgets.PREF_ALIGN, (choices.getInt(HomeWidgets.PREF_ALIGN, 0) + 1) % 3).apply();
+            layoutLabels.run();
+        });
+        order.setOnClickListener(v -> {
+            String now = HomeWidgets.orderOf(choices);
+            int i = java.util.Arrays.asList(HomeWidgets.ORDERS).indexOf(now);
+            choices.edit().putString(HomeWidgets.PREF_ORDER, HomeWidgets.ORDERS[(i + 1) % HomeWidgets.ORDERS.length]).apply();
+            layoutLabels.run();
+        });
     }
 
     private void cardSwitch(int id, String pref, String label) {
