@@ -35,7 +35,7 @@ Izinkan akses penyimpanan saat diminta. File yang kamu unduh ada di `~/storage/d
 
 Unduh `tvhome-widget.apk` dari halaman **Releases** repo ini.
 
-## 3. Sambungkan dan cek launcher bawaan
+## 3. Sambungkan dan cari launcher bawaan
 
 ```
 adb connect <ip-tv>:5555
@@ -44,27 +44,27 @@ adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c 
 
 Saat pertama kali, di layar TV muncul pertanyaan izin debugging: centang **Always allow**, lalu **OK**.
 
-Baris terakhir hasil perintah kedua adalah launcher bawaan TV-mu, misalnya `com.google.android.tvlauncher/...`, `com.google.android.apps.tv.launcherx/...` (Google TV), atau `com.mitv.tvhome/...` (Xiaomi). **Catat nama paketnya** (bagian sebelum `/`).
+Baris terakhir hasil perintah kedua adalah launcher yang sedang jadi Home, misalnya `com.google.android.tvlauncher/...`, `com.google.android.apps.tv.launcherx/...` (Google TV), atau `com.mitv.tvhome/...` (Xiaomi). **Catat nama paketnya** (bagian sebelum `/`); di langkah berikutnya ini disebut `<launcher-bawaan>`.
 
-## 4. Pasang dan jadikan Home
-
-Di Termux (ganti path-nya kalau pakai komputer):
+Kalau hasilnya `com.gathin.tvhome/...`, berarti TV-mu sudah memakai CleanYourTV, dan launcher bawaannya sedang dimatikan. Cari dengan:
 
 ```
-adb install -r ~/storage/downloads/tvhome-widget.apk
-adb shell cmd package set-home-activity --user 0 com.gathin.tvhome/.MainActivity
-adb shell pm disable-user --user 0 <launcher-bawaan>
+adb shell pm list packages -d
 ```
 
-Ganti `<launcher-bawaan>` dengan nama paket dari langkah 3. Tekan tombol **Home** di remote untuk mengecek.
+Daftar itu berisi aplikasi yang sedang dimatikan; launcher bawaanmu biasanya salah satu dari tiga nama di atas.
 
-### Sudah memakai CleanYourTV versi lain?
+## 4. Pasang
 
-Kalau perintah `adb install` di atas gagal dengan pesan `INSTALL_FAILED_UPDATE_INCOMPATIBLE` atau `signatures do not match`, berarti di TV sudah terpasang CleanYourTV dari sumber lain (versi asli Gathin, atau build sendiri). Android tidak mengizinkan menimpanya langsung, jadi lakukan pemasangan bersih.
+Pilih salah satu.
 
-Pemasangan bersih **menghapus semua pengaturan launcher lama** di TV itu: tema, wallpaper, urutan aplikasi, dan file yang pernah di-push. Aplikasi lain di TV tidak tersentuh.
+### A. Pasang baru
 
-Ikuti urutan ini persis, supaya TV tidak sempat kehilangan Home:
+Untuk **semua pengguna baru**, baik TV-nya belum pernah memakai CleanYourTV maupun sudah memakai CleanYourTV versi lain (versi asli Gathin atau build sendiri). Versi lain itu tidak bisa ditimpa langsung karena tanda tangan aplikasinya berbeda, jadi dihapus dulu.
+
+Kalau sebelumnya sudah ada CleanYourTV, **pengaturan launcher lamanya ikut terhapus** (tema, wallpaper, urutan aplikasi, file yang pernah di-push). Aplikasi lain di TV tidak tersentuh.
+
+Di Termux (ganti path-nya kalau pakai komputer), jalankan berurutan:
 
 ```
 adb shell pm enable <launcher-bawaan>
@@ -74,15 +74,21 @@ adb shell cmd package set-home-activity --user 0 com.gathin.tvhome/.MainActivity
 adb shell pm disable-user --user 0 <launcher-bawaan>
 ```
 
-`<launcher-bawaan>` adalah nama paket dari langkah 3. Kalau saat itu perintah langkah 3 malah menunjukkan `com.gathin.tvhome`, cari launcher bawaanmu dengan:
+Urutannya sengaja begitu supaya TV tidak sempat kehilangan Home: launcher bawaan dihidupkan dulu, baru launcher lama dihapus.
+
+Kalau TV-mu belum pernah memakai CleanYourTV, baris kedua menjawab `Failure` atau `Unknown package`. Itu normal, lanjutkan saja.
+
+Tekan tombol **Home** di remote untuk mengecek, lalu lanjut ke langkah 5.
+
+### B. Update dari CleanYourTV Sola versi sebelumnya
+
+Kalau TV-mu sudah memakai CleanYourTV Sola dan cuma ingin memasang versi baru dari halaman Releases, semua pengaturan tetap aman:
 
 ```
-adb shell pm list packages -d
+adb install -r ~/storage/downloads/tvhome-widget.apk
 ```
 
-Biasanya salah satunya `com.google.android.tvlauncher`, `com.google.android.apps.tv.launcherx`, atau `com.mitv.tvhome`.
-
-Setelah itu lanjutkan ke langkah 5 dan 6, karena izin dan suara adzan ikut terhapus.
+Selesai, langkah 5 dan 6 tidak perlu diulang. Kalau gagal dengan pesan `INSTALL_FAILED_UPDATE_INCOMPATIBLE` atau `signatures do not match`, berarti yang terpasang bukan dari Releases repo ini; pakai **A. Pasang baru**.
 
 ## 5. Beri izin (untuk pengingat adzan)
 
