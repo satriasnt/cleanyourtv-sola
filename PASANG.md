@@ -58,6 +58,32 @@ adb shell pm disable-user --user 0 <launcher-bawaan>
 
 Ganti `<launcher-bawaan>` dengan nama paket dari langkah 3. Tekan tombol **Home** di remote untuk mengecek.
 
+### Sudah memakai CleanYourTV versi lain?
+
+Kalau perintah `adb install` di atas gagal dengan pesan `INSTALL_FAILED_UPDATE_INCOMPATIBLE` atau `signatures do not match`, berarti di TV sudah terpasang CleanYourTV dari sumber lain (versi asli Gathin, atau build sendiri). Android tidak mengizinkan menimpanya langsung, jadi lakukan pemasangan bersih.
+
+Pemasangan bersih **menghapus semua pengaturan launcher lama** di TV itu: tema, wallpaper, urutan aplikasi, dan file yang pernah di-push. Aplikasi lain di TV tidak tersentuh.
+
+Ikuti urutan ini persis, supaya TV tidak sempat kehilangan Home:
+
+```
+adb shell pm enable <launcher-bawaan>
+adb uninstall com.gathin.tvhome
+adb install ~/storage/downloads/tvhome-widget.apk
+adb shell cmd package set-home-activity --user 0 com.gathin.tvhome/.MainActivity
+adb shell pm disable-user --user 0 <launcher-bawaan>
+```
+
+`<launcher-bawaan>` adalah nama paket dari langkah 3. Kalau saat itu perintah langkah 3 malah menunjukkan `com.gathin.tvhome`, cari launcher bawaanmu dengan:
+
+```
+adb shell pm list packages -d
+```
+
+Biasanya salah satunya `com.google.android.tvlauncher`, `com.google.android.apps.tv.launcherx`, atau `com.mitv.tvhome`.
+
+Setelah itu lanjutkan ke langkah 5 dan 6, karena izin dan suara adzan ikut terhapus.
+
 ## 5. Beri izin (untuk pengingat adzan)
 
 ```
