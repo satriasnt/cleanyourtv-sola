@@ -87,6 +87,12 @@ final class FootballSource {
                 : "https://images.fotmob.com/image_resources/logo/teamlogo/" + fotmobTeamId + "_small.png";
     }
 
+    /** The club's crest at full size, for the big badge on the next-match card. */
+    static String badgeLarge(String fotmobTeamId) {
+        return fotmobTeamId == null || !fotmobTeamId.matches("\\d+") ? ""
+                : "https://images.fotmob.com/image_resources/logo/teamlogo/" + fotmobTeamId + ".png";
+    }
+
     /** The fixtures for the chosen source, or an exception with a message fit for the settings screen. */
     static String fetch(Context c, String source, String teamId, String teamName) throws Exception {
         return GEMINI.equals(source) ? gemini(c, teamId, teamName) : fotmob(teamId);
@@ -105,8 +111,11 @@ final class FootballSource {
         JSONObject all = fixtures == null ? null : fixtures.optJSONObject("allFixtures");
         JSONArray list = all == null ? null : all.optJSONArray("fixtures");
         if (list == null) throw new Exception("FotMob tidak memberi jadwal untuk tim ini");
-        Instant since = Instant.now().minus(Duration.ofHours(36));
-        List<JSONObject> out = new ArrayList<>();
+        Instant now = Instant.now();
+        Instant since = now.minus(Duration.ofHours(36));
+        // The card shows the next match and the club's form: keep the last results and the matches ahead.
+        List<JSONObject> played = new ArrayList<>();
+        List<JSONObject> ahead = new ArrayList<>();
         for (int i = 0; i < list.length(); i++) {
             JSONObject m = list.getJSONObject(i);
             JSONObject status = m.optJSONObject("status");
@@ -119,7 +128,9 @@ final class FootballSource {
             } catch (RuntimeException e) {
                 continue;
             }
-            if (start.isBefore(since)) continue;
+            boolean finished = status.optBoolean("finished")
+                    || (status.optBoolean("started") && start.isBefore(now.minus(Duration.ofHours(3))));
+            if (!finished && start.isBefore(since)) continue;
             JSONObject e = new JSONObject();
             e.put("idEvent", "fm-" + m.optString("id"));
             e.put("strTimestamp", start.toString());
@@ -133,7 +144,7 @@ final class FootballSource {
             e.put("strAwayTeamBadge", badge(awayId));
             JSONObject tournament = m.optJSONObject("tournament");
             e.put("strLeague", tournament == null ? "" : tournament.optString("name"));
-            if (status.optBoolean("started")) {
+            if (status.optBoolean("started") || finished) {
                 String[] score = status.optString("scoreStr").split("-");
                 if (score.length == 2) {
                     e.put("intHomeScore", score[0].trim());
@@ -143,10 +154,79 @@ final class FootballSource {
                     e.put("intAwayScore", away.optString("score"));
                 }
             }
-            out.add(e);
-            if (out.size() >= 12) break;
+            if (finished) {
+                played.add(e);
+            } else {
+                ahead.add(e);
+                if (ahead.size() >= 8) break;
+            }
         }
-        return wrap(out);
+        List<JSONObject> out = new ArrayList<>(played.subList(Math.max(0, played.size() - 6), played.size()));
+        out.addAll(ahead);
+        return wrap(out, standings(team, teamId));
+    }
+
+    /**
+     * The league table from the team's FotMob page, as {"league": "...", "rows": [{rank, id, name, played, pts}]}.
+     * Prefers the first table the club is in; null when FotMob sent none (the table card then stays hidden).
+     */
+    private static JSONObject standings(JSONObject team, String teamId) {
+        try {
+            List<Object[]> found = new ArrayList<>();
+            collectTables(team.opt("table"), "", found);
+            Object[] pick = null;
+            for (Object[] f : found) {
+                JSONArray rows = (JSONArray) f[0];
+                for (int i = 0; i < rows.length() && pick == null; i++) {
+                    JSONObject r = rows.optJSONObject(i);
+                    if (r != null && teamId.equals(r.optString("id"))) pick = f;
+                }
+                if (pick != null) break;
+            }
+            if (pick == null && !found.isEmpty()) pick = found.get(0);
+            if (pick == null) return null;
+            JSONArray rows = (JSONArray) pick[0];
+            JSONArray out = new JSONArray();
+            for (int i = 0; i < rows.length() && i < 30; i++) {
+                JSONObject r = rows.optJSONObject(i);
+                if (r == null) continue;
+                String name = r.optString("name");
+                if (name.isEmpty()) name = r.optString("shortName");
+                out.put(new JSONObject().put("rank", i + 1).put("id", r.optString("id")).put("name", name)
+                        .put("played", r.optInt("played")).put("pts", r.optInt("pts")));
+            }
+            return new JSONObject().put("league", (String) pick[1]).put("rows", out);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Walks FotMob's "table" node for arrays of table rows, remembering the nearest leagueName above each. */
+    private static void collectTables(Object node, String league, List<Object[]> out) {
+        if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            String l = o.optString("leagueName", league);
+            Object whole = o.opt("all");
+            if (whole instanceof JSONArray && isTableRows((JSONArray) whole)) {
+                out.add(new Object[]{whole, l});
+                return;
+            }
+            JSONArray names = o.names();
+            for (int i = 0; names != null && i < names.length(); i++) collectTables(o.opt(names.optString(i)), l, out);
+        } else if (node instanceof JSONArray) {
+            JSONArray a = (JSONArray) node;
+            if (isTableRows(a)) {
+                out.add(new Object[]{a, league});
+                return;
+            }
+            for (int i = 0; i < a.length(); i++) collectTables(a.opt(i), league, out);
+        }
+    }
+
+    private static boolean isTableRows(JSONArray a) {
+        if (a.length() < 2) return false;
+        JSONObject first = a.optJSONObject(0);
+        return first != null && first.has("pts") && first.has("played");
     }
 
     /** Teams whose name matches {@code term}: {id, name, league} each. */
@@ -327,9 +407,15 @@ final class FootballSource {
     // ---- helpers ----------------------------------------------------------------------------------
 
     private static String wrap(List<JSONObject> events) throws Exception {
+        return wrap(events, null);
+    }
+
+    private static String wrap(List<JSONObject> events, JSONObject table) throws Exception {
         JSONArray a = new JSONArray();
         for (JSONObject e : events) a.put(e);
-        return new JSONObject().put("events", a).toString();
+        JSONObject out = new JSONObject().put("events", a);
+        if (table != null) out.put("table", table);
+        return out.toString();
     }
 
     /** The first JSON array in a model's reply (it may come wrapped in a code fence or a sentence). */

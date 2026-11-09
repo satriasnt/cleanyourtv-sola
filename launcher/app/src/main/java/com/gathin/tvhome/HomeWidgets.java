@@ -81,12 +81,16 @@ final class HomeWidgets {
     private final TextView[] prayerTimes = new TextView[5];
     private final TextView calWeekday, calDay, calHijri;
     private final MonthView calMonth;
-    private final TextView ballKicker, ballEmpty;
+    private final TextView ballLeague, ballSide, ballTitle, ballCountdown, ballWhen, ballLast, ballEmpty;
     private final android.widget.ImageView ballTeamLogo;
-    private final View[] ballRows = new View[4];
-    private final TextView[] ballDates = new TextView[4], ballOpponents = new TextView[4], ballTags = new TextView[4];
-    private final android.widget.ImageView[] ballLogos = new android.widget.ImageView[4];
-    private final View calCard, prayerCard, ballCard;
+    private final View ballContent, ballFormRow;
+    private final TextView[] ballForm = new TextView[FORM_MAX];
+    private final TextView[] ballLater = new TextView[2];
+    private final TextView tableTitle;
+    private final View[] tableRows = new View[TABLE_ROWS];
+    private final TextView[] tableRank = new TextView[TABLE_ROWS], tableName = new TextView[TABLE_ROWS],
+            tablePlayed = new TextView[TABLE_ROWS], tablePts = new TextView[TABLE_ROWS];
+    private final View calCard, prayerCard, ballCard, tableCard;
 
     /** The widget row, or null when home_widgets is off. */
     static HomeWidgets create(Activity activity) {
@@ -127,23 +131,37 @@ final class HomeWidgets {
         calDay = row.findViewById(R.id.calDay);
         calHijri = row.findViewById(R.id.calHijri);
         calMonth = row.findViewById(R.id.calMonth);
-        ballKicker = row.findViewById(R.id.ballKicker);
+        ballLeague = row.findViewById(R.id.ballLeague);
+        ballSide = row.findViewById(R.id.ballSide);
+        ballTitle = row.findViewById(R.id.ballTitle);
+        ballCountdown = row.findViewById(R.id.ballCountdown);
+        ballWhen = row.findViewById(R.id.ballWhen);
+        ballLast = row.findViewById(R.id.ballLast);
         ballEmpty = row.findViewById(R.id.ballEmpty);
         ballTeamLogo = row.findViewById(R.id.ballTeamLogo);
-        int[][] ids = {{R.id.ballRow0, R.id.ballDate0, R.id.ballLogo0, R.id.ballOpponent0, R.id.ballTag0},
-                {R.id.ballRow1, R.id.ballDate1, R.id.ballLogo1, R.id.ballOpponent1, R.id.ballTag1},
-                {R.id.ballRow2, R.id.ballDate2, R.id.ballLogo2, R.id.ballOpponent2, R.id.ballTag2},
-                {R.id.ballRow3, R.id.ballDate3, R.id.ballLogo3, R.id.ballOpponent3, R.id.ballTag3}};
-        for (int i = 0; i < 4; i++) {
-            ballRows[i] = row.findViewById(ids[i][0]);
-            ballDates[i] = row.findViewById(ids[i][1]);
-            ballLogos[i] = row.findViewById(ids[i][2]);
-            ballOpponents[i] = row.findViewById(ids[i][3]);
-            ballTags[i] = row.findViewById(ids[i][4]);
+        ballContent = row.findViewById(R.id.ballContent);
+        ballFormRow = row.findViewById(R.id.ballFormRow);
+        int[] forms = {R.id.ballForm0, R.id.ballForm1, R.id.ballForm2, R.id.ballForm3, R.id.ballForm4};
+        for (int i = 0; i < FORM_MAX; i++) ballForm[i] = row.findViewById(forms[i]);
+        ballLater[0] = row.findViewById(R.id.ballLater0);
+        ballLater[1] = row.findViewById(R.id.ballLater1);
+        tableTitle = row.findViewById(R.id.tableTitle);
+        int[] trows = {R.id.tableRow0, R.id.tableRow1, R.id.tableRow2, R.id.tableRow3, R.id.tableRow4};
+        int[] tranks = {R.id.tableRank0, R.id.tableRank1, R.id.tableRank2, R.id.tableRank3, R.id.tableRank4};
+        int[] tnames = {R.id.tableName0, R.id.tableName1, R.id.tableName2, R.id.tableName3, R.id.tableName4};
+        int[] tplayed = {R.id.tablePlayed0, R.id.tablePlayed1, R.id.tablePlayed2, R.id.tablePlayed3, R.id.tablePlayed4};
+        int[] tpts = {R.id.tablePts0, R.id.tablePts1, R.id.tablePts2, R.id.tablePts3, R.id.tablePts4};
+        for (int i = 0; i < TABLE_ROWS; i++) {
+            tableRows[i] = row.findViewById(trows[i]);
+            tableRank[i] = row.findViewById(tranks[i]);
+            tableName[i] = row.findViewById(tnames[i]);
+            tablePlayed[i] = row.findViewById(tplayed[i]);
+            tablePts[i] = row.findViewById(tpts[i]);
         }
         calCard = row.findViewById(R.id.calCard);
         prayerCard = row.findViewById(R.id.prayerCard);
         ballCard = row.findViewById(R.id.ballCard);
+        tableCard = row.findViewById(R.id.tableCard);
         shadowTexts(row, density);
         row.setVisibility(View.VISIBLE);
     }
@@ -155,6 +173,7 @@ final class HomeWidgets {
         boolean football = prefs.getBoolean(PREF_SHOW_FOOTBALL, true);
         prayerCard.setVisibility(prayer ? View.VISIBLE : View.GONE);
         ballCard.setVisibility(football ? View.VISIBLE : View.GONE);
+        if (!football) tableCard.setVisibility(View.GONE);
         if (prayer) {
             try {
                 updatePrayer(now);
@@ -212,15 +231,22 @@ final class HomeWidgets {
     private void arrangeCards() {
         android.widget.LinearLayout r = (android.widget.LinearLayout) row;
         String order = orderOf(prefs);
-        View[] cards = new View[3];
+        List<View> cards = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             char c = order.charAt(i);
-            cards[i] = c == 'p' ? prayerCard : c == 'k' ? calCard : ballCard;
+            if (c == 'p') {
+                cards.add(prayerCard);
+            } else if (c == 'k') {
+                cards.add(calCard);
+            } else {
+                cards.add(ballCard);    // the next match, with the league table right beside it
+                cards.add(tableCard);
+            }
         }
-        for (int i = 0; i < 3; i++) {
-            if (r.getChildAt(i) != cards[i]) {
-                r.removeView(cards[i]);
-                r.addView(cards[i], i);
+        for (int i = 0; i < cards.size(); i++) {
+            if (r.getChildAt(i) != cards.get(i)) {
+                r.removeView(cards.get(i));
+                r.addView(cards.get(i), i);
             }
         }
         boolean stretch = prefs.getBoolean(PREF_STRETCH, true);
@@ -233,9 +259,11 @@ final class HomeWidgets {
         for (View card : cards) {
             if (card.getVisibility() != View.VISIBLE) continue;
             android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) card.getLayoutParams();
+            boolean football = card == ballCard || card == tableCard;
             int start = first ? 0 : gap;
-            int width = stretch ? 0 : third;
-            float weight = stretch ? 1f : 0f;
+            int width = stretch || football ? 0 : third;
+            // The match card is the wide one, the table card the narrow one.
+            float weight = card == ballCard ? 1.6f : card == tableCard ? 1f : stretch ? 1f : 0f;
             if (lp.getMarginStart() != start || lp.width != width || lp.weight != weight) {
                 lp.setMarginStart(start);
                 lp.width = width;
@@ -262,7 +290,7 @@ final class HomeWidgets {
         if (WidgetStyle.BLUR.equals(style) && backdrop == null) style = WidgetStyle.DARK;   // no snapshot here
         int[] rootAt = new int[2];
         root.getLocationInWindow(rootAt);
-        for (View card : new View[]{prayerCard, calCard, ballCard}) {
+        for (View card : new View[]{prayerCard, calCard, ballCard, tableCard}) {
             if (card.getVisibility() != View.VISIBLE || card.getWidth() == 0) continue;
             int[] at = new int[2];
             card.getLocationInWindow(at);
@@ -427,10 +455,10 @@ final class HomeWidgets {
 
     // ---- football ---------------------------------------------------------------------------------
 
-    private static final String PREF_MATCHES = "football_events_v2";
+    private static final String PREF_MATCHES = "football_events_v3";
     private static final String PREF_MATCHES_KEY = "football_events_key";
-    private static final String PREF_FETCHED_AT = "football_fetched_v2";
-    private static final String PREF_TRIED_AT = "football_tried_v2";
+    private static final String PREF_FETCHED_AT = "football_fetched_v3";
+    private static final String PREF_TRIED_AT = "football_tried_v3";
     /** FotMob: every 6 hours, and every 15 minutes around a match to follow the score. */
     private static final long FOTMOB_EVERY_MS = 6 * 3600_000L;
     private static final long NEAR_MATCH_MS = 15 * 60_000L;
@@ -438,8 +466,9 @@ final class HomeWidgets {
     private static final long GEMINI_EVERY_MS = 24 * 3600_000L;
     private static final long RETRY_MS = 30 * 60_000L;
     private static final Duration LIVE = Duration.ofMinutes(115);
-    /** How many lines the fixture list shows. */
-    private static final int ROWS = 4;
+    /** How many results the form shows, and how many table rows the card has. */
+    private static final int FORM_MAX = 5;
+    private static final int TABLE_ROWS = 5;
 
     private static final class Match {
         final Instant start;
@@ -509,53 +538,191 @@ final class HomeWidgets {
         return midnight.toInstant().isAfter(now);
     }
 
+    private static final int GOLD = 0xFFE8B94A;
+    private static final int FORM_WIN = 0xFF2C8F55, FORM_DRAW = 0xFF566070, FORM_LOSS = 0xFF8E2A38;
+
     private void updateFootball(Instant now) {
         String teamId = FootballSource.teamId(activity);
-        ballKicker.setText("JADWAL " + FootballSource.teamName(activity).toUpperCase(ID));
-        Badges.show(ballTeamLogo, FootballSource.badge(teamId), io, main, false);
-        List<Match> list = new ArrayList<>();
+        Badges.show(ballTeamLogo, FootballSource.badgeLarge(teamId), io, main, false);
+        updateTable();
+        List<Match> ahead = new ArrayList<>();    // live or still to play
+        List<Match> played = new ArrayList<>();   // finished, with a result, oldest first
         for (Match m : cachedMatches()) {
-            if (stillListed(m, now)) list.add(m);
+            boolean over = !m.start.plus(LIVE).isAfter(now);
+            if (!over) ahead.add(m);
+            else if (!m.score.isEmpty()) played.add(m);
         }
-        if (list.isEmpty()) {
+        if (ahead.isEmpty() && played.isEmpty()) {
             boolean never = !cacheKey().equals(prefs.getString(PREF_MATCHES_KEY, ""));
             String error = prefs.getString(FootballSource.PREF_ERROR, "");
-            for (View r : ballRows) r.setVisibility(View.GONE);
+            ballContent.setVisibility(View.GONE);
             ballEmpty.setVisibility(View.VISIBLE);
             ballEmpty.setText(!error.isEmpty() && never ? error : never ? "Memuat jadwal…" : "Jadwal berikutnya belum rilis");
             return;
         }
         ballEmpty.setVisibility(View.GONE);
-        DateTimeFormatter withTime = DateTimeFormatter.ofPattern("EEE d/M HH.mm", ID);
-        DateTimeFormatter dateOnly = DateTimeFormatter.ofPattern("EEE d/M", ID);
-        for (int i = 0; i < ROWS; i++) {
-            if (i >= list.size()) {
-                ballRows[i].setVisibility(View.GONE);
+        ballContent.setVisibility(View.VISIBLE);
+
+        if (ahead.isEmpty()) {
+            show(ballLeague, FootballSource.teamName(activity).toUpperCase(ID));
+            show(ballSide, "");
+            show(ballTitle, "Jadwal berikutnya belum rilis");
+            show(ballCountdown, "");
+            show(ballWhen, "");
+        } else {
+            Match next = ahead.get(0);
+            show(ballLeague, shortLeague(next.league).toUpperCase(ID));
+            show(ballSide, next.home ? "KANDANG" : "TANDANG");
+            show(ballTitle, next.homeName + " vs " + next.awayName);
+            boolean live = !now.isBefore(next.start) && !next.noTime;
+            if (next.noTime) {
+                show(ballCountdown, "Jam kick-off belum diumumkan");
+            } else if (live) {
+                show(ballCountdown, next.score.isEmpty() ? "Sedang berlangsung" : "Sedang berlangsung · " + next.score);
+            } else {
+                show(ballCountdown, "Kick-off dalam " + countdown(Duration.between(now, next.start)));
+            }
+            ballCountdown.setTextColor(live ? MonthView.RED : GOLD);
+            ZonedDateTime local = next.start.atZone(ZoneId.systemDefault());
+            show(ballWhen, next.noTime ? local.format(DateTimeFormatter.ofPattern("EEEE d MMM", ID))
+                    : local.format(DateTimeFormatter.ofPattern("EEEE d MMM HH:mm", ID)) + " " + zoneLabel(next.start));
+        }
+
+        // Form: the last five results, oldest first; M = menang, S = seri, K = kalah.
+        int shown = Math.min(FORM_MAX, played.size());
+        ballFormRow.setVisibility(shown == 0 ? View.GONE : View.VISIBLE);
+        for (int i = 0; i < FORM_MAX; i++) {
+            int[] g = i < shown ? goals(played.get(played.size() - shown + i)) : null;
+            if (g == null) {
+                ballForm[i].setVisibility(View.GONE);
                 continue;
             }
-            Match m = list.get(i);
-            ballRows[i].setVisibility(View.VISIBLE);
-            java.time.ZonedDateTime local = m.start.atZone(ZoneId.systemDefault());
-            ballDates[i].setText(m.noTime ? local.format(dateOnly) + " –" : local.format(withTime));
-            ballOpponents[i].setText((m.home ? "vs " : "@ ") + m.opponent());
-            Badges.show(ballLogos[i], m.home ? m.awayBadge : m.homeBadge, io, main, true);
-            boolean over = !m.start.plus(LIVE).isAfter(now);
-            boolean live = !now.isBefore(m.start) && !over && !m.noTime;
-            if (over && !m.score.isEmpty()) {
-                ballTags[i].setText(m.score);
-                ballTags[i].setTextColor(0xFF7FE0A0);
-            } else if (live) {
-                ballTags[i].setText(m.score.isEmpty() ? "● LIVE" : "● " + m.score);
-                ballTags[i].setTextColor(MonthView.RED);
-            } else {
-                ballTags[i].setText(tag(m.league));
-                ballTags[i].setTextColor(0x8CFFFFFF);
+            Match m = played.get(played.size() - shown + i);
+            int us = m.home ? g[0] : g[1];
+            int them = m.home ? g[1] : g[0];
+            ballForm[i].setText(us > them ? "M" : us == them ? "S" : "K");
+            ballForm[i].setBackground(chip(us > them ? FORM_WIN : us == them ? FORM_DRAW : FORM_LOSS));
+            ballForm[i].setVisibility(View.VISIBLE);
+        }
+
+        if (played.isEmpty()) {
+            show(ballLast, "");
+        } else {
+            Match last = played.get(played.size() - 1);
+            show(ballLast, "Terakhir: " + last.homeName + " " + last.score + " " + last.awayName);
+        }
+
+        // The two matches after the next one.
+        DateTimeFormatter withTime = DateTimeFormatter.ofPattern("EEE d MMM HH:mm", ID);
+        DateTimeFormatter dateOnly = DateTimeFormatter.ofPattern("EEE d MMM", ID);
+        for (int i = 0; i < ballLater.length; i++) {
+            if (ahead.size() <= i + 1) {
+                show(ballLater[i], "");
+                continue;
             }
-            // Played matches step back a little; the eye goes to what is next.
-            float alpha = over ? 0.6f : 1f;
-            ballDates[i].setAlpha(alpha);
-            ballOpponents[i].setAlpha(alpha);
-            ballLogos[i].setAlpha(alpha);
+            Match m = ahead.get(i + 1);
+            ZonedDateTime z = m.start.atZone(ZoneId.systemDefault());
+            show(ballLater[i], (m.home ? "vs " : "di ") + m.opponent() + "  ·  "
+                    + (m.noTime ? z.format(dateOnly) : z.format(withTime) + " " + zoneLabel(m.start)));
+        }
+    }
+
+    private static void show(TextView view, CharSequence text) {
+        view.setText(text);
+        view.setVisibility(text == null || text.length() == 0 ? View.GONE : View.VISIBLE);
+    }
+
+    private android.graphics.drawable.Drawable chip(int color) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(4 * density);
+        return d;
+    }
+
+    /** The goals of a finished match as {home, away}, or null when the score is not a plain "h - a". */
+    private static int[] goals(Match m) {
+        String[] p = m.score.split(" - ");
+        if (p.length != 2) return null;
+        try {
+            return new int[]{Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim())};
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** "3j 49mnt", "2 hari 5j": how long until kick-off. */
+    private static String countdown(Duration d) {
+        long minutes = Math.max(1, d.toMinutes());
+        if (minutes < 60) return minutes + "mnt";
+        long hours = minutes / 60;
+        if (hours < 24) return hours + "j " + (minutes % 60) + "mnt";
+        return (hours / 24) + " hari " + (hours % 24) + "j";
+    }
+
+    /** WIB, WITA or WIT for the TV's time zone, else GMT+n. */
+    private static String zoneLabel(Instant at) {
+        int hours = ZoneId.systemDefault().getRules().getOffset(at).getTotalSeconds() / 3600;
+        if (hours == 7) return "WIB";
+        if (hours == 8) return "WITA";
+        if (hours == 9) return "WIT";
+        return "GMT" + (hours >= 0 ? "+" : "") + hours;
+    }
+
+    // ---- league table -----------------------------------------------------------------------------
+
+    private JSONObject cachedTable() {
+        if (!cacheKey().equals(prefs.getString(PREF_MATCHES_KEY, ""))) return null;
+        try {
+            return new JSONObject(prefs.getString(PREF_MATCHES, "{}")).optJSONObject("table");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Five rows of the table around the favourite club, the club highlighted; hidden when there is no table. */
+    private void updateTable() {
+        JSONObject t = cachedTable();
+        JSONArray rows = t == null ? null : t.optJSONArray("rows");
+        if (rows == null || rows.length() == 0) {
+            tableCard.setVisibility(View.GONE);
+            return;
+        }
+        tableCard.setVisibility(View.VISIBLE);
+        String league = clean(t.optString("league"));
+        tableTitle.setText(league.isEmpty() ? "KLASEMEN" : "KLASEMEN " + league.toUpperCase(ID));
+        String teamId = FootballSource.teamId(activity);
+        int n = rows.length();
+        int fav = -1;
+        for (int i = 0; i < n && fav < 0; i++) {
+            JSONObject r = rows.optJSONObject(i);
+            if (r != null && teamId.equals(r.optString("id"))) fav = i;
+        }
+        // The top five when the club is among them, else a window of five with the club in it.
+        int start = fav < 0 ? 0 : Math.max(0, Math.min(fav - 2, n - TABLE_ROWS));
+        for (int i = 0; i < TABLE_ROWS; i++) {
+            JSONObject r = rows.optJSONObject(start + i);
+            if (r == null) {
+                tableRows[i].setVisibility(View.GONE);
+                continue;
+            }
+            boolean mine = start + i == fav;
+            tableRows[i].setVisibility(View.VISIBLE);
+            android.graphics.drawable.GradientDrawable bg = null;
+            if (mine) {
+                bg = new android.graphics.drawable.GradientDrawable();
+                bg.setColor(0x33E8B94A);
+                bg.setCornerRadius(6 * density);
+            }
+            tableRows[i].setBackground(bg);
+            tableRank[i].setText(String.valueOf(r.optInt("rank", start + i + 1)));
+            tableName[i].setText(clean(r.optString("name")));
+            tablePlayed[i].setText(String.valueOf(r.optInt("played")));
+            tablePts[i].setText(String.valueOf(r.optInt("pts")));
+            int white = mine ? GOLD : 0xFFFFFFFF;
+            tableRank[i].setTextColor(mine ? GOLD : 0x8CFFFFFF);
+            tableName[i].setTextColor(white);
+            tablePlayed[i].setTextColor(mine ? GOLD : 0xCCFFFFFF);
+            tablePts[i].setTextColor(white);
         }
     }
 
@@ -623,7 +790,11 @@ final class HomeWidgets {
                 } else {
                     prefs.edit().putString(FootballSource.PREF_ERROR, message).apply();
                 }
-                if (!activity.isFinishing()) updateFootball(Instant.now());
+                if (!activity.isFinishing()) {
+                    updateFootball(Instant.now());
+                    arrangeCards();    // the table card may have just appeared
+                    row.post(this::styleCards);
+                }
             });
         });
     }
